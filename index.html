@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Roll Lottery</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
+  button { padding: 10px 20px; font-size: 18px; cursor: pointer; margin: 5px; }
+  p { font-size: 20px; margin-top: 20px; }
+  #languageOverlay {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+</style>
+</head>
+<body>
+
+<div id="languageOverlay">
+  <h2>Please select your language</h2>
+  <button onclick="selectLanguage('English')">English</button>
+  <button onclick="selectLanguage('Other')">Other</button>
+</div>
+
+<div id="mainContent" style="display:none;">
+  <h1>🎲 Roll the Number!</h1>
+  <p>Click the button to roll a number from 1 to 1000. If you hit a lucky number, you get a special link!</p>
+  <button id="rollBtn" onclick="rollNumber()">Roll Number</button>
+  <p id="result"></p>
+</div>
+
+<script>
+const luckyNumbers = [23, 456, 789, 101, 202, 303, 404, 505, 606, 707]; // your 10 numbers
+const winnerLink = "https://example.com"; // replace with your link
+
+// Check if user has already rolled
+if(localStorage.getItem('hasRolled') === 'true'){
+    document.getElementById('rollBtn').disabled = true;
+    document.getElementById('result').textContent = "⚠️ You have already rolled.";
+}
+
+// Language selection
+function selectLanguage(lang) {
+  if(lang === 'English') {
+    document.getElementById('languageOverlay').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+  } else {
+    alert('Sorry, only English is allowed to continue.');
+  }
+}
+
+// Roll number logic
+function rollNumber() {
+  if(localStorage.getItem('hasRolled') === 'true'){
+      alert("You already rolled on this device!");
+      return;
+  }
+
+  const roll = Math.floor(Math.random() * 1000) + 1;
+  const result = document.getElementById("result");
+  
+  if (luckyNumbers.includes(roll)) {
+    result.innerHTML = `🎉 You rolled: ${roll}. You win! <a href="${winnerLink}" target="_blank">Click here</a>`;
+  } else {
+    result.textContent = `You rolled: ${roll}. No match.`;
+  }
+
+  // Mark as rolled
+  localStorage.setItem('hasRolled', 'true');
+  document.getElementById('rollBtn').disabled = true;
+}
+</script>
+
+</body>
+</html>
