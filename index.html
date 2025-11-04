@@ -1,82 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Number Roll Lottery</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Roll the Number</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
-  button { padding: 10px 20px; font-size: 18px; cursor: pointer; margin: 5px; }
-  p { font-size: 20px; margin-top: 20px; }
-  #languageOverlay {
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-  }
+  body{font-family:Inter,system-ui,Arial;margin:0;background:#0f172a;color:#e6eef8;display:flex;align-items:center;justify-content:center;height:100vh}
+  .card{background:#0b1220;padding:28px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,.6);width:320px;text-align:center}
+  button{background:#7c3aed;border:none;color:white;padding:10px 16px;border-radius:8px;font-size:16px;cursor:pointer}
+  button:disabled{opacity:.5;cursor:default}
+  #languageOverlay{position:fixed;inset:0;background:rgba(2,6,23,.9);display:flex;align-items:center;justify-content:center;z-index:999}
+  .langBox{background:#071029;padding:24px;border-radius:10px;text-align:center;color:#dbeafe}
+  a{color:#60a5fa}
+  #result{margin-top:14px;font-size:15px}
 </style>
 </head>
 <body>
 
+<!-- Language gate overlay -->
 <div id="languageOverlay">
-  <h2>Please select your language</h2>
-  <button onclick="selectLanguage('English')">English</button>
-  <button onclick="selectLanguage('Other')">Other</button>
+  <div class="langBox">
+    <h3>Select language / Språk</h3>
+    <p style="opacity:.85">You must press <strong>English</strong> to continue.</p>
+    <div style="margin-top:12px">
+      <button onclick="selectLanguage('English')">English</button>
+      <button onclick="selectLanguage('Other')" style="margin-left:8px;background:#111827">Other</button>
+    </div>
+  </div>
 </div>
 
-<div id="mainContent" style="display:none;">
-  <h1>🎲 Roll the Number!</h1>
-  <p>Click the button to roll a number from 1 to 1000. If you hit a lucky number, you get a special link!</p>
-  <button id="rollBtn" onclick="rollNumber()">Roll Number</button>
-  <p id="result"></p>
+<div class="card" id="mainContent" style="display:none">
+  <h2>🎲 Roll the Number</h2>
+  <p style="opacity:.85;font-size:14px">Click Roll. Range: 1–1000. One roll per device.</p>
+  <div style="margin:16px 0">
+    <button id="rollBtn" onclick="rollNumber()">Roll</button>
+  </div>
+  <div id="result"></div>
 </div>
 
 <script>
-const luckyNumbers = [23, 456, 789, 101, 202, 303, 404, 505, 606, 707]; // your 10 numbers
-const winnerLink = "https://example.com"; // replace with your link
+/* ===== CONFIG ===== */
+const luckyNumbers = [23,456,789,101,202,303,404,505,606,707]; // your 10 numbers
+// base64 of "https://notgiorgio.my.canva.site/great"
+const obfLink = "aHR0cHM6Ly9ub3RnaW9yZ2lvLm15LmNhbnZhLnNpdGUvZ3JlYXQ=";
+const SINGLE_USE_KEY = "hasRolled_v1";
+/* ================== */
 
-// Check if user has already rolled
-if(localStorage.getItem('hasRolled') === 'true'){
-    document.getElementById('rollBtn').disabled = true;
-    document.getElementById('result').textContent = "⚠️ You have already rolled.";
-}
-
-// Language selection
-function selectLanguage(lang) {
-  if(lang === 'English') {
+/* Language gate */
+function selectLanguage(lang){
+  if(lang === "English"){
     document.getElementById('languageOverlay').style.display = 'none';
     document.getElementById('mainContent').style.display = 'block';
   } else {
-    alert('Sorry, only English is allowed to continue.');
+    alert("Sorry — only English is allowed to continue.");
+    // optional: redirect snoopers
+    // window.location.href = "about:blank";
   }
 }
 
-// Roll number logic
-function rollNumber() {
-  if(localStorage.getItem('hasRolled') === 'true'){
-      alert("You already rolled on this device!");
-      return;
+/* Single-use check on load */
+if(localStorage.getItem(SINGLE_USE_KEY) === 'true'){
+  // show UI but disable roll
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('rollBtn').disabled = true;
+  document.getElementById('result').textContent = "⚠️ You have already rolled on this device.";
+  document.getElementById('languageOverlay').style.display = 'none';
+}
+
+/* Roll function */
+function rollNumber(){
+  if(localStorage.getItem(SINGLE_USE_KEY) === 'true'){
+    alert("You already rolled on this device.");
+    return;
   }
 
+  // generate roll
   const roll = Math.floor(Math.random() * 1000) + 1;
-  const result = document.getElementById("result");
-  
-  if (luckyNumbers.includes(roll)) {
-    result.innerHTML = `🎉 You rolled: ${roll}. You win! <a href="${winnerLink}" target="_blank">Click here</a>`;
+  const result = document.getElementById('result');
+
+  if(luckyNumbers.includes(roll)){
+    // decode base64 at reveal time
+    const link = atob(obfLink);
+    result.innerHTML = `🎉 You rolled <strong>${roll}</strong> — you win!<br><a href="${link}" target="_blank" rel="noopener">Click here</a>`;
   } else {
-    result.textContent = `You rolled: ${roll}. No match.`;
+    result.textContent = `You rolled ${roll}. No match — better luck next time.`;
   }
 
-  // Mark as rolled
-  localStorage.setItem('hasRolled', 'true');
+  // mark device as used
+  localStorage.setItem(SINGLE_USE_KEY, 'true');
   document.getElementById('rollBtn').disabled = true;
 }
+
+/* Optional: mild devtools detection (very weak) */
+(function detectDevTools(){
+  let opened = false;
+  setInterval(()=> {
+    const threshold = 160;
+    if(window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold){
+      if(!opened){
+        opened = true;
+        // mild deterrent: hide main and show message
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('languageOverlay').style.display = 'flex';
+        // you can also redirect: window.location.href = 'https://example.com';
+      }
+    } else {
+      opened = false;
+    }
+  }, 1000);
+})();
 </script>
 
 </body>
 </html>
+
