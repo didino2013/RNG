@@ -82,7 +82,7 @@ function rollNumber(){
     const link = atob(obfLink);
     result.innerHTML = `🎉 You rolled <strong>${roll}</strong> — you win!<br><a href="${link}" target="_blank" rel="noopener">Click here</a>`;
   } else {
-    result.textContent = `You rolled ${roll}. No match — better luck next time.`;
+    result.textContent = `You rolled ${roll}. No match.`;
   }
 
   // mark device as used
@@ -112,6 +112,7 @@ function rollNumber(){
 
 </body>
 </html>
+
 
 
 
